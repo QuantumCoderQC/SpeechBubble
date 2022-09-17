@@ -1,0 +1,65 @@
+#version 300 es
+precision mediump float;
+precision highp int;
+
+uniform highp sampler2D IMG;
+
+in highp vec3 wnormal;
+in highp vec2 texCoord;
+out highp vec4 fragColor[2];
+
+highp vec2 octahedronWrap(highp vec2 v)
+{
+    return (vec2(1.0) - abs(v.yx)) * vec2((v.x >= 0.0) ? 1.0 : (-1.0), (v.y >= 0.0) ? 1.0 : (-1.0));
+}
+
+highp float packFloatInt16(highp float f, uint i)
+{
+    uint bitsInt = i << 12u;
+    uint bitsFloat = uint(f * 4095.0);
+    return float(bitsInt | bitsFloat);
+}
+
+highp float packFloat2(highp float f1, highp float f2)
+{
+    return floor(f1 * 255.0) + min(f2, 0.9900000095367431640625);
+}
+
+void main()
+{
+    highp vec3 n = normalize(wnormal);
+    highp vec3 UVMap_UV_res = vec3(texCoord.x, 1.0 - texCoord.y, 0.0);
+    highp vec4 IMG_store = texture(IMG, vec2(UVMap_UV_res.x, 1.0 - UVMap_UV_res.y));
+    highp vec3 IMG_Color_res = IMG_store.xyz;
+    highp vec3 basecol = IMG_Color_res;
+    highp float roughness = 0.100000001490116119384765625;
+    highp float metallic = 0.0;
+    highp float occlusion = 1.0;
+    highp float specular = 1.0;
+    highp float emission = 0.0;
+    highp float opacity = 0.999800026416778564453125;
+    if (opacity < 0.20000000298023223876953125)
+    {
+        discard;
+    }
+    n /= vec3((abs(n.x) + abs(n.y)) + abs(n.z));
+    highp vec2 _136;
+    if (n.z >= 0.0)
+    {
+        _136 = n.xy;
+    }
+    else
+    {
+        _136 = octahedronWrap(n.xy);
+    }
+    n = vec3(_136.x, _136.y, n.z);
+    uint matid = 0u;
+    if (emission > 0.0)
+    {
+        basecol *= emission;
+        matid = 1u;
+    }
+    fragColor[0] = vec4(n.xy, roughness, packFloatInt16(metallic, matid));
+    fragColor[1] = vec4(basecol, packFloat2(occlusion, specular));
+}
+

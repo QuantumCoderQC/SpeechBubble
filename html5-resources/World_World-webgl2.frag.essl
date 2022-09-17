@@ -1,0 +1,41 @@
+#version 300 es
+precision mediump float;
+precision highp int;
+
+uniform highp vec3 H;
+uniform highp vec3 A;
+uniform highp vec3 B;
+uniform highp vec3 C;
+uniform highp vec3 D;
+uniform highp vec3 E;
+uniform highp vec3 F;
+uniform highp vec3 G;
+uniform highp vec3 I;
+uniform highp vec3 hosekSunDirection;
+uniform highp vec3 Z;
+uniform highp float envmapStrength;
+
+in highp vec3 normal;
+out highp vec4 fragColor;
+
+highp vec3 hosekWilkie(highp float cos_theta, highp float gamma, highp float cos_gamma)
+{
+    highp vec3 chi = vec3(1.0 + (cos_gamma * cos_gamma)) / pow((vec3(1.0) + (H * H)) - (H * (2.0 * cos_gamma)), vec3(1.5));
+    return (vec3(1.0) + (A * exp(B / vec3(cos_theta + 0.00999999977648258209228515625)))) * ((((C + (D * exp(E * gamma))) + (F * (cos_gamma * cos_gamma))) + (G * chi)) + (I * sqrt(cos_theta)));
+}
+
+void main()
+{
+    highp vec3 n = normalize(normal);
+    highp vec3 pos = -n;
+    highp float cos_theta = clamp(pos.z, 0.0, 1.0);
+    highp float cos_gamma = dot(pos, hosekSunDirection);
+    highp float gamma_val = acos(cos_gamma);
+    highp float param = cos_theta;
+    highp float param_1 = gamma_val;
+    highp float param_2 = cos_gamma;
+    highp vec3 SkyTexture_Color_res = (Z * hosekWilkie(param, param_1, param_2)) * envmapStrength;
+    fragColor = vec4(SkyTexture_Color_res.x, SkyTexture_Color_res.y, SkyTexture_Color_res.z, fragColor.w);
+    fragColor.w = 0.0;
+}
+
