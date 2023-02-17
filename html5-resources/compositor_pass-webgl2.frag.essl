@@ -17,7 +17,9 @@ void main()
 {
     highp vec2 texCo = texCoord;
     fragColor = textureLod(tex, texCo, 0.0);
-    highp vec3 _59 = tonemapFilmic(fragColor.xyz);
-    fragColor = vec4(_59.x, _59.y, _59.z, fragColor.w);
+    highp vec3 _61 = min(fragColor.xyz, vec3(32752.0));
+    fragColor = vec4(_61.x, _61.y, _61.z, fragColor.w);
+    highp vec3 _66 = tonemapFilmic(fragColor.xyz);
+    fragColor = vec4(_66.x, _66.y, _66.z, fragColor.w);
 }
 
